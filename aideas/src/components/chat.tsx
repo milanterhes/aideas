@@ -172,12 +172,11 @@ const ApiKeyDialog = () => {
         apiKeyState.setApiKey(data.apiKey)
     }
 
-    return <Dialog open={apiKeyState.isDialogOpen} onOpenChange={(newOpen) => {
+    return <Dialog open={apiKeyState.apiKey === ''} onOpenChange={() => {
         // only close the dialog if the API key is set
         if (!apiKeyState.apiKey) {
             return
         }
-        apiKeyState.setDialogOpen(newOpen)
     }}>
         <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>

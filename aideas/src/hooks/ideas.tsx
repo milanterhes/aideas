@@ -4,10 +4,10 @@ import { Idea, IdeaService } from '@/lib/ideas';
 import { MutationOptions, QueryOptions, useMutation, useQuery } from '@tanstack/react-query';
 
 export const ideaQuery = {
-    queryKey: ['local-ideas'],
+    queryKey: ['ideas'],
     useQuery: (ideaService: IdeaService, options?: QueryOptions<Idea[]>) => useQuery({
         ...options,
-        queryKey: ['local-ideas'],
+        queryKey: ['ideas'],
         queryFn: ideaService.getIdeas,
     })
 }
@@ -22,9 +22,9 @@ export const addRawIdeasMutation = {
 }
 
 export const setIdeasMutation = {
-    useMutation: (ideaService: IdeaService, options?: MutationOptions<void, Error, Idea[]>) => useMutation({
+    useMutation: (ideaService: IdeaService, options?: MutationOptions<void, Error>) => useMutation({
         mutationKey: ['set-ideas'],
-        mutationFn: (ideas) => ideaService.setIdeas(ideas),
+        mutationFn: () => ideaService.resetIdeas(),
         ...options,
     }),
     mutationKey: ['set-ideas'],

@@ -1,9 +1,12 @@
 import { useIdeaService } from '@/lib/idea-service-provider'
 import { useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import OpenAI from 'openai'
-import { useMemo, useState } from 'react'
-import { ideaQuery, addRawIdeasMutation } from './local-ideas'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { addRawIdeasMutation } from './ideas'
+import { useApiKey } from '@/lib/api-key-provider'
+import { LocalIdeaService } from '@/lib/ideas'
 
 const systemPrompt = `
     You are a helpful assistant that generates ideas for the user. If they ask you for something else, you can tell me that you can only generate ideas. Use markdown to format your responses.
@@ -13,18 +16,38 @@ const systemPrompt = `
 
 const useChat = (apiKey: string) => {
     const queryClient = useQueryClient()
+    const { status: sessionStatus } = useSession()
     const ideaService = useIdeaService(state => state.service)
+    const setRemote = useIdeaService(state => state.setRemote)
+    const apiKeyState = useApiKey()
     const aiClient = useMemo(() => new OpenAI({
         apiKey,
         dangerouslyAllowBrowser: true,
     }), [apiKey])
 
+    useEffect(() => {
+        if (sessionStatus === 'authenticated') {
+            setRemote()
+        }
+    }, [sessionStatus])
+
+    useEffect(() => {
+        if (sessionStatus === 'authenticated') {
+            queryClient.invalidateQueries()
+        }
+    }, [ideaService])
+
+    useEffect(() => {
+        apiKeyState.setApiKey(sessionStorage.getItem('apiKey') ?? '')
+    }, [])
+
     const setIdeas = addRawIdeasMutation.useMutation(ideaService, {
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                exact: true,
-                queryKey: ideaQuery.queryKey,
-            })
+            queryClient.invalidateQueries()
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `I saved the ideas ${ideaService instanceof LocalIdeaService ? 'locally' : 'to the cloud'}.`,
+            }])
         },
         onError: (error) => {
             console.log(error)
@@ -32,15 +55,10 @@ const useChat = (apiKey: string) => {
         }
     })
 
-    function handleToolCall(toolCall: ToolCall): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
+    function handleToolCall(toolCall: ToolCall) {
         if (toolCall.name === 'save_ideas') {
             setIdeas.mutate(toolCall.arguments);
-            return [{
-                role: 'assistant',
-                content: 'I saved the ideas for you.',
-            }];
         }
-        return [];
     }
 
     const [isStreaming, setIsStreaming] = useState(false)
@@ -50,15 +68,7 @@ const useChat = (apiKey: string) => {
         {
             role: 'system',
             content: systemPrompt,
-        },
-        // {
-        //     role: 'user',
-        //     content: 'I am planning on buying a yacht. can you give me name ideas?',
-        // },
-        // {
-        //     role: 'assistant',
-        //     content: 'Sure! Here are some name ideas for your yacht:\n - The Sea Queen\n - The Blue Horizon\n - The Ocean Dream\n - The Sea Breeze\n - The Aqua Star\nWould you like to save these ideas?',
-        // }
+        }
     ])
 
     const sendPrompt = async (prompt: string) => {
@@ -128,8 +138,7 @@ const useChat = (apiKey: string) => {
                 }]);
             }
             if (toolCall) {
-                const toolMessages = handleToolCall(toolCall);
-                setMessages(prev => [...prev, ...toolMessages]);
+                handleToolCall(toolCall);
             }
         } catch (error) {
             console.log(error);
