@@ -31,7 +31,7 @@ const IdeasList: React.FC<PropsWithChildren> = ({ children }) => {
     return (
         <Sheet>
             <SheetTrigger asChild>{children}</SheetTrigger>
-            <SheetContent side="bottom" className='h-screen grid'>
+            <SheetContent side="bottom" className='h-dvh grid'>
                 <SheetHeader>
                     <SheetTitle>Your saved ideas</SheetTitle>
                     {ideas.isLoading && <SheetDescription>Loading...</SheetDescription>}
