@@ -9,6 +9,7 @@ import React, { PropsWithChildren } from 'react'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet'
+import { ScrollArea } from './ui/scroll-area'
 
 const IdeasList: React.FC<PropsWithChildren> = ({ children }) => {
     const { data: session, status: sessionStatus } = useSession()
@@ -30,21 +31,29 @@ const IdeasList: React.FC<PropsWithChildren> = ({ children }) => {
     return (
         <Sheet>
             <SheetTrigger asChild>{children}</SheetTrigger>
-            <SheetContent side="bottom">
+            <SheetContent side="bottom" className='h-screen grid'>
                 <SheetHeader>
                     <SheetTitle>Your saved ideas</SheetTitle>
                     {ideas.isLoading && <SheetDescription>Loading...</SheetDescription>}
                     <SheetDescription>
                         {ideas.data?.length} ideas
                     </SheetDescription>
-                    {
-                        ideas.data?.map((idea, index) => (
-                            <SheetDescription key={index} className='flex flex-col'>
-                                <small className='italic'>{idea.context}</small>
-                                <span>{idea.idea}</span>
-                            </SheetDescription>
-                        ))
-                    }
+
+                    <div className="flex flex-col flex-grow">
+                        <ScrollArea className="h-0 flex-grow px-2">
+                            {
+                                ideas.data?.map((idea, index) => (
+                                    <>
+                                        <SheetDescription key={index} className='flex flex-col'>
+                                            <small className='italic'>{idea.context}</small>
+                                            <span>{idea.idea}</span>
+                                        </SheetDescription>
+                                        {index < ideas.data.length - 1 && <hr className='my-2' />}
+                                    </>
+                                ))
+                            }
+                        </ScrollArea>
+                    </div>
                     <SheetFooter className='flex flex-col gap-2'>
                         <Button onClick={() => {
                             setIdeas.mutate()
