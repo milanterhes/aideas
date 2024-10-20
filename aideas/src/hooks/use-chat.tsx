@@ -9,7 +9,7 @@ import { useApiKey } from '@/lib/api-key-provider'
 import { LocalIdeaService } from '@/lib/ideas'
 
 const systemPrompt = `
-    You are a helpful assistant that generates ideas for the user. If they ask you for something else, you can tell me that you can only generate ideas. Use markdown to format your responses.
+    You are a helpful assistant that generates ideas for the user. If they ask you for something else, you can tell them that you can only generate ideas. Use markdown to format your responses.
 
     After generating ideas, ask the user if they would like to save the ideas. If they say yes, you can save the ideas for them.
 `

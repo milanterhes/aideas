@@ -43,13 +43,13 @@ const IdeasList: React.FC<PropsWithChildren> = ({ children }) => {
                         <ScrollArea className="h-0 flex-grow px-2">
                             {
                                 ideas.data?.map((idea, index) => (
-                                    <>
-                                        <SheetDescription key={index} className='flex flex-col'>
+                                    <div key={index}>
+                                        <SheetDescription className='flex flex-col'>
                                             <small className='italic'>{idea.context}</small>
                                             <span>{idea.idea}</span>
                                         </SheetDescription>
                                         {index < ideas.data.length - 1 && <hr className='my-2' />}
-                                    </>
+                                    </div>
                                 ))
                             }
                         </ScrollArea>
