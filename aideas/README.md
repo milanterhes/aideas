@@ -1,5 +1,7 @@
 # AIdeas
 
+## https://aideas-nine.vercel.app/
+
 ### AIdeas is a chatbot that helps you generate and save ideas.
 
 #### Design decisions
