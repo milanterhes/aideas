@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { trackEvent } from "@/server/posthog-client";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { AuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
@@ -23,6 +24,23 @@ const authOptions: AuthOptions = {
             };
         },
     },
+    events: {
+        signIn(message) {
+            trackEvent({
+                event: 'sign_in',
+                properties: { message },
+                distinctId: message.user.id,
+            })
+            if (message.isNewUser) {
+                const { name, id } = message.user
+                trackEvent({
+                    event: 'user_created',
+                    properties: { name, id },
+                    distinctId: id,
+                })
+            }
+        },
+    }
 };
 
 export default authOptions;

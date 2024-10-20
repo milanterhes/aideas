@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { db } from './db'
 import { savedIdeas } from './schema'
 import { swaggerUI } from '@hono/swagger-ui'
+import { trackEvent } from './posthog-client'
 
 
 const app = new OpenAPIHono()
@@ -85,6 +86,14 @@ app.openapi(addIdeasRoute, async (c) => {
 
     const result = await db.insert(savedIdeas).values(ideas.map(idea => ({ ...idea, userId: session.user.id }))).returning();
 
+    trackEvent({
+        distinctId: session.user.id,
+        event: 'ideas_added',
+        properties: {
+            count: result.length,
+        }
+    })
+
     return c.json(result, { status: 201 });
 })
 
@@ -109,6 +118,11 @@ app.openapi(resetIdeasRoute, async (c) => {
     }
 
     await db.delete(savedIdeas).where(eq(savedIdeas.userId, session.user.id));
+
+    trackEvent({
+        distinctId: session.user.id,
+        event: 'ideas_reset',
+    })
 
     return c.text('', { status: 200 });
 })

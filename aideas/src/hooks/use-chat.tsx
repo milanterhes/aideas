@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { addRawIdeasMutation } from './ideas'
 import { useApiKey } from '@/lib/api-key-provider'
 import { LocalIdeaService } from '@/lib/ideas'
+import { usePostHog } from 'posthog-js/react'
 
 const systemPrompt = `
     You are a helpful assistant that generates ideas for the user. If they ask you for something else, you can tell them that you can only generate ideas. Use markdown to format your responses.
@@ -20,6 +21,7 @@ const useChat = (apiKey: string) => {
     const ideaService = useIdeaService(state => state.service)
     const setRemote = useIdeaService(state => state.setRemote)
     const apiKeyState = useApiKey()
+    const posthog = usePostHog()
     const aiClient = useMemo(() => new OpenAI({
         apiKey,
         dangerouslyAllowBrowser: true,
@@ -74,6 +76,13 @@ const useChat = (apiKey: string) => {
     const sendPrompt = async (prompt: string) => {
         try {
             setIsStreaming(true);
+            posthog.capture(
+                'chat_message',
+                {
+                    role: 'user',
+                    content: prompt,
+                }
+            );
             const stream = await aiClient.chat.completions.create({
                 model: 'gpt-4o',
                 messages: [

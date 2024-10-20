@@ -14,7 +14,7 @@
 
 Running locally:
 
-`touch .env.local` then fill it out using the example
+`touch .env.local` then fill it out using the example (Posthog keys are optional)
 
 `bun install`
 

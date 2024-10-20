@@ -4,6 +4,7 @@ import "./globals.css";
 import QueryClientProvider from "@/lib/query-client";
 import { Toaster } from "@/components/ui/sonner";
 import NextAuthProvider from "@/components/session-provider";
+import CSPostHogProvider from "@/lib/posthog-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,12 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryClientProvider>
-          <NextAuthProvider>
-            {children}
-            <Toaster />
-          </NextAuthProvider>
-        </QueryClientProvider>
+        <CSPostHogProvider>
+          <QueryClientProvider>
+            <NextAuthProvider>
+              {children}
+              <Toaster />
+            </NextAuthProvider>
+          </QueryClientProvider>
+        </CSPostHogProvider>
       </body>
     </html>
   );
